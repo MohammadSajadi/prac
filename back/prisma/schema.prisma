@@ -1,0 +1,99 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum BikeStatus {
+  AVAILABLE
+  RESERVED
+  DAMAGED
+  LOST
+}
+
+enum ReservationStatus {
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+enum ReportStatus {
+  PENDING
+  RESOLVED
+}
+
+model User {
+  id                  Int                   @id @default(autoincrement())
+  email               String
+  password            String
+  username            String                @unique
+  reservations        Reservation[]
+  Return              Return[]
+  LostAndDamageReport LostAndDamageReport[]
+}
+
+model Admin {
+  id       Int    @id @default(autoincrement())
+  email    String
+  password String
+  username String @unique
+}
+
+model Bike {
+  id                   Int                   @id @default(autoincrement())
+  bikeCode             String                @unique
+  status               BikeStatus
+  location             Location              @relation(fields: [locationId], references: [id])
+  reservations         Reservation[]
+  returns              Return[]
+  lostAndDamageReports LostAndDamageReport[]
+  locationId           Int
+}
+
+model Reservation {
+  id         Int               @id @default(autoincrement())
+  user       User              @relation(fields: [userId], references: [id])
+  userId     Int
+  bike       Bike              @relation(fields: [bikeId], references: [id])
+  bikeId     Int
+  status     ReservationStatus
+  location   Location          @relation(fields: [locationId], references: [id])
+  createdAt  DateTime          @default(now())
+  locationId Int
+}
+
+model Return {
+  id         Int      @id @default(autoincrement())
+  user       User     @relation(fields: [userId], references: [id])
+  userId     Int
+  bike       Bike     @relation(fields: [bikeId], references: [id])
+  bikeId     Int
+  location   Location @relation(fields: [locationId], references: [id])
+  returnedAt DateTime @default(now())
+  locationId Int
+}
+
+model Location {
+  id          Int           @id @default(autoincrement())
+  name        String
+  address     String
+  bikes       Bike[]
+  Reservation Reservation[]
+  Return      Return[]
+}
+
+model LostAndDamageReport {
+  id      Int          @id @default(autoincrement())
+  user    User         @relation(fields: [userId], references: [id])
+  userId  Int
+  bike    Bike         @relation(fields: [bikeId], references: [id])
+  bikeId  Int
+  status  ReportStatus
+  details String
+}

@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "Return" ALTER COLUMN "returnedAt" SET DEFAULT CURRENT_TIMESTAMP;
